@@ -19,9 +19,12 @@ namespace TwitchBot
     internal class Program
     {
         // Twitch Bot Credentials
-        static string botUsername = "";
-        static string oauthToken = "";
-        static string channelName = "";
+        static TwitchSettings twitchSettings = new TwitchSettings
+        {
+            BotUsername = "",
+            OAuthToken = "",
+            Channel = ""
+        };
 
         // Twitch Client
         static TwitchClient client = null;
@@ -39,9 +42,10 @@ namespace TwitchBot
             // Load settings from appsettings.json
             var loader = new AppSettingsLoader();
             var settings = loader.Load();
+            twitchSettings = settings.Twitch;
 
             Console.WriteLine($"Loaded settings from 'appsettings.json'");
-            Console.WriteLine($"Loaded settings for bot: {settings.Twitch.BotUsername} in channel: {settings.Twitch.Channel}");
+            Console.WriteLine($"Loaded settings for bot: {twitchSettings.BotUsername} in channel: {twitchSettings.Channel}");
 
             // Startup bot controller window thread
             WindowThread = new Thread(new ThreadStart(() =>
@@ -156,12 +160,12 @@ namespace TwitchBot
         static void RegisterBot()
         {
             var credentials = new ConnectionCredentials(
-            $"{botUsername}",
-            $"oauth:{oauthToken}"
+            $"{twitchSettings.BotUsername}",
+            $"oauth:{twitchSettings.OAuthToken}"
             );
 
             client = new TwitchClient();
-            client.Initialize(credentials, $"{channelName}");
+            client.Initialize(credentials, $"{twitchSettings.Channel}");
 
             client.OnMessageReceived += OnMessage;
             client.Connect();
@@ -208,7 +212,7 @@ namespace TwitchBot
         {
             if (client != null && client.IsConnected)
             {
-                client.SendMessage(channelName, message);
+                client.SendMessage(twitchSettings.Channel, message);
             }
         }
 
